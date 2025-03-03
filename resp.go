@@ -84,7 +84,7 @@ func (rsp *resp) readArray() (value, error) {
 		if err != nil {
 			return val, err
 		}
-		val.array[i] = v
+		val.array = append(val.array, v)
 	}
 	return val, nil
 }
