@@ -7,6 +7,11 @@ import (
 	"os"
 )
 
+type redisLog struct {
+	logError *log.Logger
+	logInfo  *log.Logger
+}
+
 func main() {
 	logError := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	logInfo := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -25,18 +30,19 @@ func main() {
 		logError.Fatal(err)
 		return
 	}
+	_ = redisLog{
+		logError: logError,
+		logInfo:  logInfo,
+	}
 	defer func(con net.Conn) { _ = con.Close() }(con)
 	for {
 		buf := make([]byte, 1024)
-
-		// read message from client
 		_, err := con.Read(buf)
 		if err != nil {
 			if err == io.EOF {
 				break
 			}
-			logInfo.Println("Error reading from client: ", err)
-			os.Exit(1)
+			logError.Fatal(err)
 		}
 		// ignore request and send back a PONG
 		_, _ = con.Write([]byte("+OK\r\n"))
