@@ -14,7 +14,7 @@ type logs struct {
 
 func initLogs() *logs {
 	return &logs{
-		logError: log.New(os.Stdout, "ERROR::\t", log.Ldate|log.Ltime|log.Lshortfile),
+		logError: log.New(os.Stderr, "ERROR::\t", log.Ldate|log.Ltime|log.Lshortfile),
 		logInfo:  log.New(os.Stdout, "INFO::\t", log.Ldate|log.Ltime),
 	}
 }

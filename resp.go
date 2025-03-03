@@ -98,6 +98,7 @@ func (rsp *resp) readBulk() (value, error) {
 		return val, err
 	}
 	bulk := make([]byte, ln)
+
 	_, err = rsp.reader.Read(bulk)
 	if err != nil {
 		return value{}, err
