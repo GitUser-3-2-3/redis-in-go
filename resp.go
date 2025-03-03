@@ -33,9 +33,9 @@ func NewResp(rd io.Reader) *Resp {
 	return &Resp{bufio.NewReader(rd)}
 }
 
-func (r *Resp) readLine() (line []byte, bytlen int, err error) {
+func (resp *Resp) readLine() (line []byte, bytlen int, err error) {
 	for {
-		byt, err := r.reader.ReadByte()
+		byt, err := resp.reader.ReadByte()
 		if err != nil {
 			return nil, 0, err
 		}
@@ -48,8 +48,8 @@ func (r *Resp) readLine() (line []byte, bytlen int, err error) {
 	return line[:len(line)-2], bytlen, nil
 }
 
-func (r *Resp) readInteger() (x, bytlen int, err error) {
-	line, bytlen, err := r.readLine()
+func (resp *Resp) readInteger() (x, bytlen int, err error) {
+	line, bytlen, err := resp.readLine()
 	if err != nil {
 		return 0, 0, err
 	}
@@ -60,34 +60,34 @@ func (r *Resp) readInteger() (x, bytlen int, err error) {
 	return int(i64), bytlen, nil
 }
 
-func (r *Resp) Read() (Value, error) {
-	bytTyp, err := r.reader.ReadByte()
+func (resp *Resp) Read() (Value, error) {
+	bytTyp, err := resp.reader.ReadByte()
 	if err != nil {
 		return Value{}, err
 	}
 	switch bytTyp {
 	case ARRAY:
-		return r.readArray()
+		return resp.readArray()
 	case BULK:
-		return r.readBulk()
+		return resp.readBulk()
 	default:
 		fmt.Printf("Unknown type: %v", string(bytTyp))
 		return Value{}, nil
 	}
 }
 
-func (r *Resp) readArray() (Value, error) {
+func (resp *Resp) readArray() (Value, error) {
 	val := Value{}
 	val.typ = "array"
 
-	ln, _, err := r.readInteger()
+	ln, _, err := resp.readInteger()
 	if err != nil {
 		return val, err
 	}
 	val.array = make([]Value, ln)
 
 	for i := 0; i < ln; i++ {
-		v, err := r.Read()
+		v, err := resp.Read()
 		if err != nil {
 			return val, err
 		}
@@ -96,21 +96,21 @@ func (r *Resp) readArray() (Value, error) {
 	return val, nil
 }
 
-func (r *Resp) readBulk() (Value, error) {
+func (resp *Resp) readBulk() (Value, error) {
 	val := Value{}
 	val.typ = "bulk"
 
-	ln, _, err := r.readInteger()
+	ln, _, err := resp.readInteger()
 	if err != nil {
 		return val, err
 	}
 	bulk := make([]byte, ln)
-	_, _ = r.reader.Read(bulk)
+	_, _ = resp.reader.Read(bulk)
 
 	val.bulk = string(bulk)
 
 	// read the trailing CRLF
-	_, _, _ = r.readLine()
+	_, _, _ = resp.readLine()
 
 	return val, nil
 }
